@@ -9,6 +9,7 @@
   "author": "Javed",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.4",
     "dotenv": "^6.1.0",
     "express": "^4.16.3",
     "express-paginate": "^1.0.0",

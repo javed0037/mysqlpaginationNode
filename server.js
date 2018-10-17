@@ -3,7 +3,9 @@ var Promise = require('bluebird');
 const bodyparser = require('body-parser');
 const mysql      = require('mysql');
 var pagination = require('pagination')
+const cors   =  require('cors');
 var  app    =  express();
+app.use(cors());
 app.use(bodyparser({limit: '50mb'}))
 app.use(bodyparser.urlencoded({limit: '50mb'}));
 app.use(bodyparser());
@@ -57,7 +59,7 @@ app.get('/user/getallUser',(req,res) =>{
 
 
 
-app.get('/savedata', function (req, res) {
+app.get('/getUserWithPagination', function (req, res) {
   var numRows;
   var queryPagination;
   var numPerPage =parseInt(req.query.npp); //parseInt(req.query.npp, 10) || 2;
@@ -65,9 +67,6 @@ app.get('/savedata', function (req, res) {
   var numPages;
   var skip = (page-1) * numPerPage;
 
-  ////
-  
-  ////
   // Here we compute the LIMIT parameter for MySQL query
 
   var limit = skip + ',' + skip + numPerPage;
@@ -77,10 +76,12 @@ app.get('/savedata', function (req, res) {
     numPages = Math.ceil(numRows / numPerPage);
     console.log('number of pages:', numPages);
   })
-  .then(() => queryAsync('SELECT * FROM users ORDER BY ID DESC LIMIT ' + skip +','+ numPerPage))
+  .then(() => queryAsync('SELECT * FROM users where userid is not null ORDER BY ID DESC LIMIT ' + skip +','+ numPerPage ))
   .then(function(results) {
+    console.log(results.length,"the lenght of the result",numRows)
     var responsePayload = {
-      results: results
+      results: results,
+      totalpages : numRows
     };
     if (page < numPages) {
       responsePayload.pagination = {
