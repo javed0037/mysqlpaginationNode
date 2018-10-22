@@ -1,10 +1,12 @@
 const express  =  require('express');
 var Promise = require('bluebird');
 const bodyparser = require('body-parser');
+const jwt = require('jsonwebtoken');
 const mysql      = require('mysql');
 var pagination = require('pagination')
 const cors   =  require('cors');
 var  app    =  express();
+var config = require('./lib/config/passpord_config')
 app.use(cors());
 app.use(bodyparser({limit: '50mb'}))
 app.use(bodyparser.urlencoded({limit: '50mb'}));
@@ -46,7 +48,7 @@ app.get('/user/getUser',(req,res) =>{
 api for get all user 
 */
 app.get('/user/getallUser',(req,res) =>{
-  var query1 = 'SELECT * from users';
+  var query1 = 'SELECT id,userid,status from users';
   connection.query(query1, function (error, results, fields) {
     if (error) throw error;
     res.json({message : "user get successfully",data : results})
@@ -54,8 +56,35 @@ app.get('/user/getallUser',(req,res) =>{
   });
 
 })
+/*
+ api for login admin
 
+*/
+app.post('/admin/login',(req,res) =>{
 
+    let  {username,password} = req.body;
+
+    var query1 = 'SELECT id,userid,status from users';
+    connection.query(query1, function (error, results, fields) {
+      if (error){
+      // throw error;
+      return res.json({message : "error",savedata : error})
+      }
+      else{
+     // console.log('there vare the id',results);
+      
+      if(username === 'admin' && password ==='1234567'){
+        var token = jwt.sign({ id: results.id  }, config.secret, {
+          expiresIn: "365d"
+        });   
+        console.log('token,token',token,'results.id',results[1].id);
+        
+        res.json({message: 'login successfully'})
+}else res.json({message : 'please enter the right user name and password'})
+      }
+    })
+  
+  })
 
 
 
@@ -76,7 +105,7 @@ app.get('/getUserWithPagination', function (req, res) {
     numPages = Math.ceil(numRows / numPerPage);
     console.log('number of pages:', numPages);
   })
-  .then(() => queryAsync('SELECT * FROM users where userid is not null ORDER BY ID DESC LIMIT ' + skip +','+ numPerPage ))
+  .then(() => queryAsync(' SELECT id,userid,status FROM users where userid is not null ORDER BY ID DESC LIMIT ' + skip +','+ numPerPage ))
   .then(function(results) {
     console.log(results.length,"the lenght of the result",numRows)
     var responsePayload = {
@@ -101,6 +130,55 @@ app.get('/getUserWithPagination', function (req, res) {
     res.json({ err: err });
   });
 });
+
+
+/*
+api to get userDetails...
+*/
+
+
+app.get('/getUserDetails',(req,res) =>{
+  var userid = req.query.userid;
+  let query  =  'select *  from users where userid = '+userid;
+  connection.query(query, function (error, results, fields) {
+    if(error){
+     return  res.json({ message : 'error to get data',error : error})
+    }else if(results){
+       return res.json({message : 'user details get successfully',results : results})
+
+    }
+ })
+});
+
+/*
+api for edit profile
+*/
+
+app.post('/admin/updateprofile',(req,res)=>{
+  var userid = req.query.userid;
+  var {name,email,phone,expiredate,status,phonewipe} = req.body;
+  // var reqObj = {
+  //    name : name,
+  //    phone : phone,
+  //    expiredate : expiredate,
+  //    status : status,
+  //    phonewipe : phonewipe
+  // }
+  //name : req.body.name;
+ let query =  'UPDATE users SET name = "'+name+'" WHERE userid ="'+userid+'"';
+ connection.query(query, function (error, results, fields) { 
+   if(error){
+     console.log("there are the error",error)
+    return  res.json({ message : 'error to get data',error : error})
+  }else if(results){
+    console.log('there are result',results);
+    
+     return res.json({message : 'user profile update successfully',results : results})
+
+   }
+
+})
+})
 
 
 
