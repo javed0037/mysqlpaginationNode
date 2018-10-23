@@ -99,7 +99,7 @@ app.get('/getUserWithPagination', function (req, res) {
   // Here we compute the LIMIT parameter for MySQL query
 
   var limit = skip + ',' + skip + numPerPage;
-  queryAsync('SELECT count(*) as numRows FROM users')
+  queryAsync('SELECT count(*) as numRows FROM users where userid is not null')
   .then(function(results) {
     numRows = results[0].numRows;
     numPages = Math.ceil(numRows / numPerPage);
@@ -156,7 +156,10 @@ api for edit profile
 
 app.post('/admin/updateprofile',(req,res)=>{
   var userid = req.query.userid;
-  var {name,email,phone,expiredate,status,phonewipe} = req.body;
+
+
+
+  var {name,email,phone,expiredate,Status,phonewipe} = req.body;
   // var reqObj = {
   //    name : name,
   //    phone : phone,
@@ -165,7 +168,9 @@ app.post('/admin/updateprofile',(req,res)=>{
   //    phonewipe : phonewipe
   // }
   //name : req.body.name;
- let query =  'UPDATE users SET name = "'+name+'" WHERE userid ="'+userid+'"';
+  console.log("resquest paramenter",req.body)
+ let query =  'UPDATE users SET name = "'+name+'",phone = "'+phone+'",email ="'+email+'",Status ="'+Status+'" WHERE userid ="'+userid +'"';
+
  connection.query(query, function (error, results, fields) { 
    if(error){
      console.log("there are the error",error)
