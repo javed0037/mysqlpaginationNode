@@ -1,5 +1,6 @@
 const express  =  require('express');
 var Promise = require('bluebird');
+const bcrypt = require('bcrypt');
 const bodyparser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const mysql      = require('mysql');
@@ -47,6 +48,7 @@ app.get('/user/getUser',(req,res) =>{
 api for get all user 
 */
 app.get('/user/getallUser',(req,res) =>{
+
   var query1 = 'SELECT id,userid,status from users';
   connection.query(query1, function (error, results, fields) {
     if (error) throw error;
@@ -162,11 +164,11 @@ app.post('/admin/updateprofile',(req,res)=>{
  connection.query(query, function (error, results, fields) { 
    if(error){
      console.log("there are the error",error)
-    return  res.json({ message : 'error to get data',error : error})
+    return  res.json({ message : 'error to get data',error : error,status : 400})
   }else if(results){
     console.log('there are result',results);
     
-     return res.json({message : 'user profile update successfully',results : results})
+     return res.json({message : 'user profile update successfully',results : results,status : 200})
 
    }
 
@@ -202,14 +204,17 @@ api for search user
 
 
 app.post('/getUserDetails1',(req,res)=>{
+
 let {name,email,phone,status} = req.body;
+
 let {npp}  =  req.query;
 
-//name=(name)?name:" ";
-var naming=(name)?" and name like '%"+name+"%'":"";
+name=(name)?name: '';
+//var naming=(name)?" and name like '%"+name+"%'":"";
 phone =(phone)?phone : null;
 email = (email)?email : '';
-status = (status)?status : '';
+status = (status)?status : null;
+var blk="";
 console.log('phone',phone ,"name" ,name)
   var numRows;
   var queryPagination;
@@ -218,13 +223,10 @@ console.log('phone',phone ,"name" ,name)
   var numPages;
   var skip = (page-1) * numPerPage;
 
-  /*
-  Here we compute the LIMIT parameter for MySQL query
-*/
   var limit = skip + ',' + skip + numPerPage;
 //name=(case when "'+name+'" is null then name else "'+name+'"  end)
-var querycondition=" where phone=(case when "+phone+" is null then phone else "+phone+"  end) and userid is not null "+naming+" ORDER BY ID DESC LIMIT " + skip +","+ numPerPage;
-var query1 = "SELECT id,userid,status FROM users" +querycondition; 
+var querycondition=" where phone=(case when "+phone+" is null then phone else "+phone+"  end) and status=(case when "+status+" is null then status else "+status+"  end) and (case when '"+email+"'='' then 1=1 else email like '%"+email+"%' end)  and (case when '"+name+"'='' then 1=1 else name like '%"+name+"%' end) and userid is not null ORDER BY ID DESC LIMIT " + skip +","+ numPerPage;
+var query1 = "SELECT * FROM users" +querycondition; 
 console.log("query1 ===",query1)
   queryAsync('SELECT count(*) as numRows FROM users' +querycondition)
   .then(function(results) {
@@ -242,18 +244,7 @@ console.log("query1 ===",query1)
       results: results,
       totalpages : numRows
     };
-    // if (page < numPages) {
-    //   responsePayload.pagination = {
-    //     current: page,
-    //     perPage: numPerPage,
-    //     previous: page > 0 ? page - 1 : undefined,
-    //     next: page < numPages - 1 ? page + 1 : undefined
-    //   }
-    // }
-    // else responsePayload.pagination = {
-    //   err: 'queried page ' + page + ' is >= to maximum page number ' + numPages
-    // }
-    res.json(responsePayload);
+    res.json({message: "user dataa get successfully",responsePayload : responsePayload});
   })
   .catch(function(err) {
     console.error(err);
@@ -261,6 +252,31 @@ console.log("query1 ===",query1)
   });
 
 
+})
+
+
+app.post('/addNewuser',(req,res)=>{
+  var {username,email,password,phone,status,} = req.body;
+  bcrypt.hash(password, 10, function(err, hash) {
+    if(err){
+      return res.json({ message : 'error to bcrypt the password',error : err,status : 400})
+    }else if(hash){
+      console.log("passowd hashed successfully",hash)
+    // Store hash in databas
+     var query =  'insert into users (username,email,password,phone,status)values("'+username+'","'+email+'","'+hash+'","'+phone+'","'+status+'")'
+     connection.query(query, function (error, results, fields) { 
+    if(error){
+    console.log("there are the error",error)
+    return res.json({ message : 'please enter the uniqe name and email and phone',error : error,status :400})
+    }else if(results){
+    console.log('there are result',results);
+    return res.json({message : 'new user create  successfully',results : results,status : 200})
+    
+    }
+    
+})
+}
+  })
 })
 
 
