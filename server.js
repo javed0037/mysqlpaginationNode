@@ -18,6 +18,8 @@ require('dotenv').config();
 /*
 sql database connection
 */
+
+
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
@@ -203,38 +205,38 @@ api for search user
 
 
 
+
+
 app.post('/getUserDetails1',(req,res)=>{
 
 let {name,email,phone,status} = req.body;
-
 let {npp}  =  req.query;
 
 name=(name)?name: '';
-//var naming=(name)?" and name like '%"+name+"%'":"";
 phone =(phone)?phone : null;
 email = (email)?email : '';
 status = (status)?status : null;
 var blk="";
-console.log('phone',phone ,"name" ,name)
-  var numRows;
-  var queryPagination;
-  var numPerPage =parseInt(req.query.npp); //parseInt(req.query.npp, 10) || 2;
-  var page =parseInt(req.query.page);// parseInt(req.query.page, 10) || 0;
-  var numPages;
-  var skip = (page-1) * numPerPage;
 
-  var limit = skip + ',' + skip + numPerPage;
-//name=(case when "'+name+'" is null then name else "'+name+'"  end)
+    console.log('phone',phone ,"name" ,name)
+    var numRows;
+    var queryPagination;
+    var numPerPage =parseInt(req.query.npp); //parseInt(req.query.npp, 10) || 2;
+    var page =parseInt(req.query.page);// parseInt(req.query.page, 10) || 0;
+    var numPages;
+    var skip = (page-1) * numPerPage;
+    var limit = skip + ',' + skip + numPerPage;
+
+
 var querycondition=" where phone=(case when "+phone+" is null then phone else "+phone+"  end) and status=(case when "+status+" is null then status else "+status+"  end) and (case when '"+email+"'='' then 1=1 else email like '%"+email+"%' end)  and (case when '"+name+"'='' then 1=1 else name like '%"+name+"%' end) and userid is not null ORDER BY ID DESC LIMIT " + skip +","+ numPerPage;
 var query1 = "SELECT * FROM users" +querycondition; 
-console.log("query1 ===",query1)
-  queryAsync('SELECT count(*) as numRows FROM users' +querycondition)
-  .then(function(results) {
-    numRows = results[0].numRows;
-    numPages = Math.ceil(numRows / numPerPage);
-    console.log('number of pages:', numPages);
-  })
 
+  queryAsync('SELECT count(*) as numRows FROM users where userid is not null')
+    .then(function(results) {
+
+        numRows = results[0].numRows;
+        numPages = Math.ceil(numRows / numPerPage);
+      })
   .then(() => queryAsync(query1 ))
   .then(function(results) {
 
@@ -278,7 +280,24 @@ app.post('/addNewuser',(req,res)=>{
 }
   })
 })
+/*
+Api for get color code
+*/
+app.get('/admin/colorCode',(req,res)=>{
+   var query = 'select * from chatwalls'
+   connection.query(query,(error, results, fields) =>{ 
+    if(error){
+    console.log("there are the error",error)
+    return res.json({ message : 'some thing went wrong',error : error,status :400})
+    }else if(results){
+    console.log('there are result',results);
+    return res.json({message : 'color code get successfully',results : results,status : 200})
+    
 
+
+   }
+   })
+  })
 
 
 
