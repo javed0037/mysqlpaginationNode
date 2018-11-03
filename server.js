@@ -80,8 +80,9 @@ app.post('/admin/login',(req,res) =>{
         });   
         console.log('token,token',token,'results.id',results[1].id);
         
-        res.json({message: 'login successfully'})
-}else res.json({message : 'please enter the right user name and password'})
+        res.json({message: 'login successfully',accessToken  : token,id : 123456,typeid : 44785,status : 200})
+
+        }else res.json({message : 'please enter the right user name and password'})
       }
     })
   
@@ -114,17 +115,7 @@ app.get('/getUserWithPagination', function (req, res) {
       results: results,
       totalpages : numRows
     };
-    // if (page < numPages) {
-    //   responsePayload.pagination = {
-    //     current: page,
-    //     perPage: numPerPage,
-    //     previous: page > 0 ? page - 1 : undefined,
-    //     next: page < numPages - 1 ? page + 1 : undefined
-    //   }
-    // }
-    // else responsePayload.pagination = {
-    //   err: 'queried page ' + page + ' is >= to maximum page number ' + numPages
-    // }
+   
     res.json(responsePayload);
   })
   .catch(function(err) {
@@ -293,18 +284,64 @@ app.get('/admin/colorCode',(req,res)=>{
     console.log('there are result',results);
     return res.json({message : 'color code get successfully',results : results,status : 200})
     
-
-
    }
    })
   })
 
 
+  /*
+Api for get the  about us data 
+  */
+
+app.get('/admin/getAboutUs',(req,res)=>{
+var id = req.query.id;
+var query = 'select * from pages where id ='+id;
+connection.query(query,(error, results, fields) =>{ 
+  if(error){
+  console.log("there are the error",error)
+  return res.json({ message : 'some thing went wrong',error : error,status :400})
+  }else if(results){
+  console.log('there are result',results);
+  return res.json({message : 'user discripations  get successfully',results : results,status : 200})
+   
+
+  }
+})
+
+})
+
+/*
+Api to update the fields
+
+*/
+
+
+app.post('/admin/updateaboutUs',(req,res)=>{
+let {title,description,Status,userid}  = req.body;
+let query  = 'UPDATE pages SET  title = "'+title+'",description = "'+description+'",Status ="'+Status+'" WHERE id ="'+userid +'"';
+  connection.query(query,(error, results, fields) =>{ 
+    if(error){
+    console.log("there are the error",error)
+    return res.json({ message : 'some thing went wrong',error : error,status :400})
+    }else if(results){
+    console.log('there are result',results);
+    return res.json({message : 'fields update successfully',results : results,status : 200})
+     
+  
+    }
+  })
+})
+
+/*
+Api for get user who register in last month......
+
+*/
 
 
 
-let port = process.env.PORT || 5000;
-app.listen(port,function(req,res){
+
+  let port = process.env.PORT || 5000;
+  app.listen(port,function(req,res){
    console.log("app is listen on the port no ",port);
 })
 module.exports = app;
