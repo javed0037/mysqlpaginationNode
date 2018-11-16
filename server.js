@@ -9,6 +9,7 @@ const cors   =  require('cors');
 var  app    =  express();
 var config = require('./lib/config/passpord_config');
 var adminRoutes = require('./lib/route/adminRout')
+var pamingaRouter = require('./lib/route/pamingaRoute')
 app.use(cors());
 app.use(bodyparser({limit: '50mb'}))
 app.use(bodyparser.urlencoded({limit: '50mb'}));
@@ -17,6 +18,7 @@ app.use(bodyparser.json());
 require('dotenv').config();
 
 app.use('/admin', adminRoutes);
+app.use('/paminga',pamingaRouter);
 
 
 
