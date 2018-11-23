@@ -22,6 +22,7 @@ app.use('/admin', adminRoutes);
 app.use('/paminga', pamingaRouter);
 
 app.use(express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'backup')));
 
 let port = process.env.PORT || 5000;
 app.listen(port, function (req, res) {

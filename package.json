@@ -16,6 +16,7 @@
     "countrycodes": "0.0.5",
     "dotenv": "^6.1.0",
     "express": "^4.16.3",
+    "express-joi-validation": "^0.3.0",
     "express-paginate": "^1.0.0",
     "jimp": "^0.5.6",
     "joi": "^14.0.6",
