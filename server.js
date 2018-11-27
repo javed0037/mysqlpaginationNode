@@ -19,7 +19,7 @@ app.use(bodyparser.json());
 require('dotenv').config();
 
 app.use('/admin', adminRoutes);
-app.use('/paminga', pamingaRouter);
+app.use('/v1/apis', pamingaRouter);
 
 app.use(express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'backup')));
